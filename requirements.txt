@@ -1,0 +1,14 @@
+accelerate
+einops==0.8.0
+matplotlib==3.9.1
+numpy==1.26.4
+pandas==2.2.3
+patool==1.15.0
+protobuf==4.25.6
+scikit-learn==1.6.1
+scipy==1.13.1
+sympy==1.13.1
+tqdm==4.67.1
+torch==2.5.0
+torch_geometric==2.6.1
+transformers==4.51.3
