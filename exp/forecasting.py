@@ -321,9 +321,16 @@ class Forecast(Exp_Basic):
                         time_now = time.time()
                     
                 if self.args.visualize and i == 0:
-                    gt = np.array(true[0, :, -1])
-                    pd = np.array(pred[0, :, -1])
-                    lookback = batch_x[0, :, -1].detach().cpu().numpy()
+                    # Handle multi-node data by visualizing the first node (node 0)
+                    node_idx = 0
+                    if len(true.shape) == 3:  # Multi-node case: (batch, pred_len, num_nodes)
+                        gt = np.array(true[0, :, node_idx])
+                        pd = np.array(pred[0, :, node_idx])
+                        lookback = batch_x[0, :, node_idx, -1].detach().cpu().numpy()
+                    else:  # Single-node case: (batch, pred_len)
+                        gt = np.array(true[0, :, -1])
+                        pd = np.array(pred[0, :, -1])
+                        lookback = batch_x[0, :, -1].detach().cpu().numpy()
                     gt = np.concatenate([lookback, gt], axis=0)
                     pd = np.concatenate([lookback, pd], axis=0)
                     dir_path = folder_path + f'{self.args.test_pred_len}/'

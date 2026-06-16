@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch_geometric.nn import GATv2Conv
 from transformers.models.gpt2.modeling_gpt2 import GPT2Model
+from layers.influence_matrix import InfluenceMatrixLayer
 # from layers.mlp import MLP
 
 class SpatioTemporalEncoder(nn.Module):
@@ -14,6 +15,9 @@ class SpatioTemporalEncoder(nn.Module):
             heads=3,
             dropout=0.1
         )
+        # SSTKG-inspired influence matrix layer for epidemic branch
+        self.influence_layer = InfluenceMatrixLayer(num_nodes=node_num, feat_dim=node_dim)
+        # adj_proj now receives influence matrix instead of raw adjacency
         self.adj_proj = nn.Sequential(
                         nn.Linear(node_num*time_point, 256),
                         nn.LayerNorm(256),
@@ -42,9 +46,12 @@ class SpatioTemporalEncoder(nn.Module):
         
         joint_feats = node_feats.reshape(-1, node_feats.size(-1))  # [315,768]
         
-        adj = adj_sequence.permute(1,0,2) # [3, 105, 105] → [105,3,105]
-        adj = adj.reshape(adj.size(0),-1) # [105,3*105]
-        adj_pred = self.adj_proj(adj) # [105,768]
+        # SSTKG-inspired: compute influence matrix from adj + case features
+        influence_matrix = self.influence_layer(adj_sequence, node_feats)  # [T, N, N]
+        # Epidemic branch uses influence matrix instead of raw adjacency
+        adj = influence_matrix.permute(1,0,2) # [T, N, N] → [N, T, N]
+        adj = adj.reshape(adj.size(0),-1) # [N, T*N]
+        adj_pred = self.adj_proj(adj) # [N, hidden_dim]
         temporal_edges = self.build_temporal_edges(num_nodes,time_point).to(node_feats.device)
         # temporal_edge_weights = torch.ones(temporal_edges.size(1), 1, device=node_feats.device)
         if temporal_edges.size(1) > 0:
