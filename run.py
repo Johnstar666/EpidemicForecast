@@ -64,6 +64,7 @@ if __name__ == '__main__':
     parser.add_argument('--mix_embeds', action='store_true', help='mix embeds', default=False)
     parser.add_argument('--test_dir', type=str, default='./test', help='test dir')
     parser.add_argument('--test_file_name', type=str, default='checkpoint.pth', help='test file')
+    parser.add_argument('--use_sstkg_constraint', action='store_true', help='use SSTKG constraint for multi-step prediction correction', default=False)
     
     # GPU
     parser.add_argument('--gpu', type=int, default=0, help='gpu')

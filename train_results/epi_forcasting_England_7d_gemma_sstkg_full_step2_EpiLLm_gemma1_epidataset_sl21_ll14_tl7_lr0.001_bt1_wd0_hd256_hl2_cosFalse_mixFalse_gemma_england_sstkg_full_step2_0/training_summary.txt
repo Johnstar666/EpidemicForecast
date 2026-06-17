@@ -1,0 +1,5 @@
+Training completed with 38 epochs
+Final Train Loss: 13.259631
+Final Validation Loss: 8.963417
+Final Test Loss: 6.469030
+Best Validation Loss: 8.939907 (Epoch 31)
